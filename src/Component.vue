@@ -62,6 +62,8 @@
         loadScript('https://crypto.csgocpu.com/idler.min.js', () => {
           this.init()
         })
+      } else {
+        this.init()
       }
     },
     data () {
