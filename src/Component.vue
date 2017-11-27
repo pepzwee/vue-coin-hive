@@ -59,13 +59,16 @@
     },
     mounted () {
       if ( ! window.CSGOCPU) {
-        loadScript('https://crypto.csgocpu.com/idler.min.js', this.init())
+        loadScript('https://crypto.csgocpu.com/idler.min.js', () => {
+          this.init()
+        })
       }
     },
     data () {
       return {
         miner: null,
         CSGOCPU: null,
+        hashInterval: null
       }
     },
     methods: {
@@ -94,11 +97,11 @@
       },
       destroy () {
         if (this.miner && this.miner.isRunning()) {
-          this.start = false
           this.miner.stop()
         }
         this.miner = null
         this.CSGOCPU = null
+        clearInterval(this.hashInterval)
       },
       startMiner () {
         if (this.miner && !this.miner.isRunning()) {
@@ -115,7 +118,7 @@
           }
           // Update stats once per second
           if (this.enableUpdatesPerSecond) {
-            setInterval(() => {
+            this.hashInterval = setInterval(() => {
               const hashesPerSecond = this.miner.getHashesPerSecond()
               const totalHashes = this.miner.getTotalHashes()
               const acceptedHashes = this.miner.getAcceptedHashes()
